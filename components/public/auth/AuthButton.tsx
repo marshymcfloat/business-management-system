@@ -19,9 +19,9 @@ const AuthButton = () => {
           <Button onClick={() => setIsDialogOpen(true)}>Get Started</Button>
         </DialogTrigger>
 
-        <DialogContent>
+        <DialogContent className="">
           <DialogHeader>
-            <DialogTitle>Login</DialogTitle>
+            <DialogTitle className="text-center uppercase">Login</DialogTitle>
           </DialogHeader>
           <AuthForm />
         </DialogContent>
