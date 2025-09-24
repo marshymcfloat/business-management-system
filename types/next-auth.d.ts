@@ -10,6 +10,7 @@ import { JWT, DefaultJWT } from "next-auth/jwt";
 declare module "next-auth/jwt" {
   interface JWT extends DefaultJWT {
     id: string;
+    username: string | null;
   }
 }
 
@@ -24,6 +25,7 @@ declare module "next-auth" {
    */
   interface User extends DefaultUser {
     // You can add any other properties you want to the User object
+    username: string | null;
   }
 
   /**
@@ -32,6 +34,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string; // This is the property you want to add
+      username: string | null;
     } & DefaultSession["user"]; // ...and combine it with the default properties
   }
 }

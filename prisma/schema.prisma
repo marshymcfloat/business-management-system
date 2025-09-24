@@ -13,17 +13,105 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
+// A User is someone who operates the system, like an employee or administrator.
 model User {
-
   id String @id @default(cuid())
 
-  email String @unique
+  username String? @unique
+  email    String  @unique
   password String
+
+  // *** CHANGED HERE: A user can process/serve many transactions ***
+  // This back-relation lets you easily find all transactions handled by an employee.
+  processedTransactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// A Customer is the client who purchases services.
+model Customer {
+  id String @id @default(cuid())
+
+  name  String
+  phone String? @unique
+
+  // A customer can have many transactions
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Branch {
+  id    String @id @default(cuid())
+  title String
+
+  services     ServiceUnit[]
+  transactions Transaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceUnit {
+  id    String @id @default(cuid())
+  title String
+  price Int
+
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  branchId String
+
+  transactions TransactionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id          String                @id @default(cuid())
+  status      TransactionStatusEnum @default(PENDING)
+  totalAmount Int
+
+  // The CUSTOMER who is buying the service.
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customerId String
+
+  // *** CHANGED HERE: The USER (employee) who created/processed the transaction ***
+  // It's optional (?) in case a user is deleted, we don't want to lose the transaction record.
+  servedBy   User?   @relation(fields: [servedById], references: [id], onDelete: SetNull)
+  servedById String? // The foreign key must also be optional.
+
+  // The BRANCH where the transaction happened.
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
+  branchId String
+
+  items TransactionItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TransactionItem {
+  id String @id @default(cuid())
+
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  transactionId String
+
+  service       ServiceUnit @relation(fields: [serviceUnitId], references: [id], onDelete: Restrict)
+  serviceUnitId String
+
+  priceAtTransaction Int
+  quantity           Int       @default(1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([transactionId, serviceUnitId])
 }
 
+enum TransactionStatusEnum {
+  DONE
+  PENDING
+  CANCELLED
+}

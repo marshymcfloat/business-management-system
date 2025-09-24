@@ -20,8 +20,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, LoaderCircle } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
-import { redirect } from "next/dist/server/api-utils";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -41,9 +40,30 @@ const SignInForm = ({ onSwitch }: { onSwitch: () => void }) => {
     authLoginSchema.shape
   ) as (keyof AuthLoginValue)[];
 
+  const onSubmit = async (values: AuthLoginValue) => {
+    const signInResponse = await signIn("credentials", {
+      email: values.email,
+      password: values.password,
+      redirect: false,
+    });
+
+    if (!signInResponse?.ok || signInResponse.error) {
+      toast(signInResponse?.error);
+      return;
+    }
+
+    redirect("/dashboard");
+  };
+
+  const { isSubmitting } = form.formState;
+
   return (
     <Form {...form}>
-      <form action="" className="space-y-4">
+      <form
+        action=""
+        className="space-y-4"
+        onSubmit={form.handleSubmit(onSubmit)}
+      >
         {formInputs.map((input) => (
           <FormField
             key={input}
@@ -70,7 +90,9 @@ const SignInForm = ({ onSwitch }: { onSwitch: () => void }) => {
             Sign up
           </span>
         </p>
-        <Button className="w-full">Login</Button>
+        <Button className="w-full" disabled={isSubmitting}>
+          {isSubmitting && <LoaderCircle className="animate-spin" />}Login
+        </Button>
       </form>
     </Form>
   );
@@ -139,7 +161,13 @@ const SignUpForm = ({ onBack }: { onBack: () => void }) => {
                 <FormLabel className="capitalize">{input}</FormLabel>
                 <FormControl>
                   <Input
-                    type={input === "email" ? "email" : "password"}
+                    type={
+                      input === "email"
+                        ? input === "email"
+                          ? "email"
+                          : "text"
+                        : "password"
+                    }
                     {...field}
                   />
                 </FormControl>

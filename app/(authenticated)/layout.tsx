@@ -6,8 +6,9 @@ const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => {
     <>
       <SidebarProvider>
         <AppSidebar />
-        <main className="h-screen bg-amber-100 w-full">
-          <SidebarTrigger className="hover:bg-amber-200" />
+        <main className="h-screen bg-amber-100 w-full p-8 relative">
+          <SidebarTrigger className="hover:bg-amber-200 absolute top-0 left-0" />
+
           {children}
         </main>
       </SidebarProvider>

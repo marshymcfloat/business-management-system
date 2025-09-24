@@ -1,8 +1,19 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+"use client";
+
+import {
+  Calendar,
+  Home,
+  Inbox,
+  LoaderCircle,
+  LogOut,
+  Search,
+  Settings,
+} from "lucide-react";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -10,29 +21,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Button } from "../ui/button";
+import { signOut } from "next-auth/react";
+import { useState } from "react";
 
-// Menu items.
 const items = [
   {
     title: "Home",
     url: "#",
     icon: Home,
   },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
+
   {
     title: "Settings",
     url: "#",
@@ -41,6 +40,14 @@ const items = [
 ];
 
 export default function AppSidebar() {
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSigningOut = () => {
+    setIsSigningOut(true);
+    signOut();
+    setIsSigningOut(false);
+  };
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -62,6 +69,16 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <Button
+          onClick={handleSigningOut}
+          disabled={isSigningOut}
+          className="space-x-4"
+        >
+          {isSigningOut && <LoaderCircle className="animate-spin" />}
+          <LogOut /> Logout
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }

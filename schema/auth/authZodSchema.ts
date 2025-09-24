@@ -21,6 +21,10 @@ export const authLoginSchema = z.object({
 
 export const authSignupSchema = z
   .object({
+    username: z
+      .string()
+      .min(3, { message: "Username should be at least 3 characters long" })
+      .max(50, { message: "Username should not exceed 50 characters" }),
     email: z
       .email({ message: "Please provide a valid email" })
       .max(50, { message: "Email should not exceed 50 characters" }),

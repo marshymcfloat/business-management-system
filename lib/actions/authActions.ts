@@ -18,13 +18,14 @@ export const createUserAction = async (values: AuthSignupValue) => {
       return { success: false, message: "Validation Error" };
     }
 
-    const { email, password } = validationResult.data;
+    const { email, password, username } = validationResult.data;
 
     const hashedPassword = await hash(password, salt);
 
     const user = await prisma.user.create({
       data: {
         email,
+        username,
         password: hashedPassword,
       },
     });
