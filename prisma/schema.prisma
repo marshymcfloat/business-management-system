@@ -13,7 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// A User is someone who operates the system, like an employee or administrator.
 model User {
   id String @id @default(cuid())
 
@@ -21,23 +20,21 @@ model User {
   email    String  @unique
   password String
 
-  // *** CHANGED HERE: A user can process/serve many transactions ***
-  // This back-relation lets you easily find all transactions handled by an employee.
   processedTransactions Transaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// A Customer is the client who purchases services.
 model Customer {
   id String @id @default(cuid())
 
   name  String
   phone String? @unique
 
-  // A customer can have many transactions
   transactions Transaction[]
+
+  voucher Voucher[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -57,6 +54,7 @@ model Branch {
 model ServiceUnit {
   id    String @id @default(cuid())
   title String
+    description String
   price Int
 
   branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
@@ -73,20 +71,22 @@ model Transaction {
   status      TransactionStatusEnum @default(PENDING)
   totalAmount Int
 
-  // The CUSTOMER who is buying the service.
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
   customerId String
 
-  // *** CHANGED HERE: The USER (employee) who created/processed the transaction ***
-  // It's optional (?) in case a user is deleted, we don't want to lose the transaction record.
   servedBy   User?   @relation(fields: [servedById], references: [id], onDelete: SetNull)
-  servedById String? // The foreign key must also be optional.
+  servedById String? 
 
-  // The BRANCH where the transaction happened.
   branch   Branch @relation(fields: [branchId], references: [id], onDelete: Restrict)
   branchId String
 
   items TransactionItem[]
+
+  paymentMethod paymentMethodEnum 
+  bookedAt DateTime
+   
+  grandTotal Int
+  totalDiscount Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -110,8 +110,25 @@ model TransactionItem {
   @@unique([transactionId, serviceUnitId])
 }
 
+model Voucher {
+id String @id @default(cuid())
+code String @unique
+
+
+createdAt DateTime
+usedBy Customer @relation(fields: [usedByCustomerId], references: [id])
+usedByCustomerId String
+
+}
+
 enum TransactionStatusEnum {
   DONE
   PENDING
   CANCELLED
+}
+
+enum paymentMethodEnum {
+  EWALLET
+  BANK
+  CASH
 }

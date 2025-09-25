@@ -7,6 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
+import CreateTransactionFormDataContainer from "./CreateTransactionFormDataContainer";
 
 const BookButton = () => {
   return (
@@ -21,8 +22,10 @@ const BookButton = () => {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Service</DialogTitle>
+          <DialogTitle className="text-center">Add Service</DialogTitle>
         </DialogHeader>
+
+        <CreateTransactionFormDataContainer />
       </DialogContent>
     </Dialog>
   );

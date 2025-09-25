@@ -5,7 +5,7 @@ import {
   authSignupSchema,
   AuthSignupValue,
 } from "@/schema/auth/authZodSchema";
-import prisma from "../prisma";
+import prisma from "../prisma/prisma";
 import { hash } from "bcryptjs";
 
 const salt = 12;

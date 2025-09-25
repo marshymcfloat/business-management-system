@@ -9,7 +9,7 @@ const DashboardPage = () => {
         Hi, <span className="font-medium">Marshymcfloat</span>{" "}
       </h1>
 
-      <Card className="w-[320px]">
+      <Card className="w-[420px]">
         <DashboardChart />
       </Card>
       <BookButton />
