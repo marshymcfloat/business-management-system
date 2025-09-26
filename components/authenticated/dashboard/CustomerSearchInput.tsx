@@ -7,8 +7,8 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { searchCustomers } from "@/lib/actions/dashboardActions";
-import { useEffect, useState } from "react";
+import { searchCustomersAction } from "@/lib/actions/dashboardActions";
+import { useEffect, useRef, useState } from "react";
 import { Control, Path, FieldValues } from "react-hook-form";
 
 type CustomerSearchInputProps<T extends FieldValues> = {
@@ -28,6 +28,9 @@ const CustomerSearchInput = <T extends FieldValues>({
   const [suggestionVisible, setSuggestionVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // Fetch customers with debounce
   useEffect(() => {
     if (!searchTerm) {
       setCustomerSuggestion([]);
@@ -36,7 +39,7 @@ const CustomerSearchInput = <T extends FieldValues>({
     }
 
     const debounce = setTimeout(async () => {
-      const response = await searchCustomers(searchTerm);
+      const response = await searchCustomersAction(searchTerm);
       if ("data" in response && response.data) {
         setCustomerSuggestion(response.data);
       } else {
@@ -48,6 +51,24 @@ const CustomerSearchInput = <T extends FieldValues>({
     return () => clearTimeout(debounce);
   }, [searchTerm]);
 
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setCustomerSuggestion([]);
+        setSuggestionVisible(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <FormField
       control={control}
@@ -56,7 +77,7 @@ const CustomerSearchInput = <T extends FieldValues>({
         <FormItem>
           <FormLabel>Customer Name</FormLabel>
           <FormControl>
-            <div className="relative">
+            <div ref={wrapperRef} className="relative">
               <Input
                 {...field}
                 onChange={(e) => {

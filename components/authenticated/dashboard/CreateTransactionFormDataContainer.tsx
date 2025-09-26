@@ -17,7 +17,7 @@ const CreateTransactionFormDataContainer = async () => {
   });
 
   return (
-    <div>
+    <div className="">
       <CreateTransactionForm services={services} branches={branches} />
     </div>
   );

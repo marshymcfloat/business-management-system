@@ -2,7 +2,7 @@
 
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   createTransactionSchema,
   CreateTransactionValues,
@@ -31,6 +31,11 @@ import DatePicker from "./DatePicker";
 import MultiServiceSelect from "./MultiServiceSelect";
 import { Card } from "@/components/ui/card";
 import SelectedServiceCard from "./SelectedServiceCard";
+import { useMutation } from "@tanstack/react-query";
+import { createTransactionAction } from "@/lib/actions/dashboardActions";
+import { LoaderCircle } from "lucide-react";
+import { toast } from "sonner";
+import { DialogClose } from "@/components/ui/dialog";
 
 type ConfiguredBranchType = { title: string; id: string };
 export type ConfiguredServiceUnitType = {
@@ -47,6 +52,7 @@ const CreateTransactionForm = ({
   services: ConfiguredServiceUnitType[];
   branches: ConfiguredBranchType[];
 }) => {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const form = useForm<CreateTransactionValues>({
     resolver: zodResolver(createTransactionSchema),
     defaultValues: {
@@ -120,15 +126,27 @@ const CreateTransactionForm = ({
     return acc + curr.price * curr.quantity;
   }, 0);
 
-  console.log(grandTotal);
+  const { mutate, isPending } = useMutation({
+    mutationFn: createTransactionAction,
+    onSuccess: (data) => {
+      toast(data?.message);
+      closeButtonRef.current?.click();
+    },
+    onError: (data) => {
+      toast(data.message);
+    },
+  });
 
-  function onSubmit(data: CreateTransactionValues) {
-    console.log("Form Submitted!", data);
+  function onSubmit(values: CreateTransactionValues) {
+    mutate(values);
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 ">
+        <DialogClose asChild>
+          <button ref={closeButtonRef} className="hidden" />
+        </DialogClose>
         <CustomerSearchInput
           onSelect={(name) => form.setValue("customerName", name)}
           control={form.control}
@@ -238,12 +256,35 @@ const CreateTransactionForm = ({
           )}
         </Card>
 
+        <FormField
+          control={form.control}
+          name="paymentMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Payment Method</FormLabel>
+              <FormControl>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Payment Method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CASH">Cash</SelectItem>
+                    <SelectItem value="BANK">Bank</SelectItem>
+                    <SelectItem value="EWALLET">E-Wallet</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
         <div className="">
           <p>
             Grand Total:<span className="font-medium"> {grandTotal}</span>
           </p>
         </div>
-        <Button type="submit" className="w-full">
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending && <LoaderCircle className="animate-spin" />}
           Create Transaction
         </Button>
       </form>
